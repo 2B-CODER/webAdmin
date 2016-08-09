@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RoleMapper">
+	
+	<resultMap type="Role" id="roleResultMap">
+		<id column="role_id" property="roleId"/>
+		<result column="role_name" property="roleName"/>
+		<result column="create_time" property="createTime"/>
+	</resultMap>
+
+	
+	<resultMap id="roleMenuMap" type="com.yunva.model.system.RoleMenu">
+		<result column="role_id" property="roleId"  />
+		<result column="menu_id" property="menuId"  />
+	</resultMap>
+
+
+	<!-- 列出角色信息 -->
+	<select id="listAllERRoles" resultMap="roleResultMap">
+		select 
+			role_id,
+			role_name,
+			create_time
+		from tbl_sys_role
+	</select>
+
+	<!-- 列出此角色下的所有用户id -->
+	<select id="listAllUByRid"  parameterType="pd" resultType="pd" >
+		select user_id
+		from tbl_sys_user
+		where
+		role_id = #{roleId}
+	</select>
+
+
+	<select id="listAllRoles" resultMap="roleResultMap">
+		select 
+			role_id,
+			role_name,
+			create_time
+		from tbl_sys_role
+		ORDER BY role_id
+	</select>
+
+	<select id="getRoleById" parameterType="String" resultMap="roleResultMap">
+		select * from tbl_sys_role
+		where role_id=#{roleId}
+	</select>
+
+	<delete id="deleteRoleById" parameterType="String">
+		delete from tbl_sys_role
+		where role_id=#{roleId}
+	</delete>
+
+	<!-- 添加 -->
+	<insert id="insert" parameterType="pd">
+		insert into tbl_sys_role
+		(
+			role_name
+		) values
+		(
+			#{roleName}
+		)
+	</insert>
+
+	<!-- 通过id查找 -->
+	<select id="findObjectById" parameterType="pd" resultType="pd">
+		select
+		    role_id as roleId,
+			role_name as roleName,
+			role_desc as roleDesc
+		from tbl_sys_role
+		where role_id = #{roleId}
+	</select>
+
+
+  <!-- 编辑角色 -->
+	<update id="edit" parameterType="pd">
+		update tbl_sys_role
+		set role_name = #{roleName}
+		where role_id = #{roleId}
+	</update>
+
+
+	<select  id="getRoleMenuIds" parameterType="Integer" resultType="java.lang.Integer">
+		select menu_id from tbl_role_menu where role_id = #{roleId}
+	</select>
+
+	<delete id="deleteRoleMenu" parameterType="Integer">
+		DELETE  from  tbl_role_menu where role_id = #{roleId}
+	</delete>
+
+
+	<insert id="saveRoleMenu" parameterType="java.util.ArrayList">
+		insert into tbl_role_menu
+		(
+		role_id,
+		menu_id
+		)
+		values
+		<foreach collection="list" item="roleMenu" index="index" separator="," >
+			(
+			#{roleMenu.roleId},
+			#{roleMenu.menuId}
+			)
+		</foreach>
+	</insert>
+
+</mapper>

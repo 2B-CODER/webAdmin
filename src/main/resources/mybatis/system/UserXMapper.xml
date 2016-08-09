@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserXMapper">
+	
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>  
+	
+	<!-- 换皮肤-->
+	<update id="setSKIN" parameterType="pd" flushCache="false">
+		update tbl_sys_user set
+		skin = #{skin}
+		where user_name = #{userName}
+	</update>
+	
+
+	<!-- 判断用户名和密码 -->
+	<select id="getUserInfo" parameterType="pd" resultType="pd" useCache="false">
+		select
+		user_id as userId,
+		user_name as userName,
+		password as password,
+		name as name,
+		role_id as roleId,
+		status as status,
+		remark,
+		skin,
+		email,
+		number,
+		phone
+		from tbl_sys_user
+		where 1=1
+		<if test="userName != null and password != null">
+	  	and	(
+	  		(user_name = #{userName} and password = #{password})
+	  		)
+		</if>
+		<if test="userId != null and userId != ''">
+		and user_id = #{userId}
+		</if>
+	</select>
+	
+
+	
+	<!-- 修改 -->
+	<update id="editUser" parameterType="pd" flushCache="false">
+		update  tbl_sys_user
+			set user_name				= #{userName},
+				`name` 					= #{name},
+				role_id 				= #{roleId},
+				remark					= #{remark},
+				email					= #{email},
+				`number`				= #{number},
+				phone					= #{phone}
+			<if test="password != null and password != ''">
+				,password				= #{password}
+			</if>
+			where 
+				user_id = #{userId}
+	</update>
+	
+	<!-- 通过user_id获取数据 -->
+	<select id="findByUiId" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			user_id as userId,
+			user_name as userName,
+			password as password,
+			name as name,
+			role_id as roleId,
+			status as status,
+			remark,
+			skin,
+			email,
+			number,
+			phone
+		from 
+			tbl_sys_user
+		where 
+			user_id = #{userId}
+	</select>
+		
+	<!-- 通过邮箱获取数据 -->
+	<select id="findByUE" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			user_id as userId,
+			user_name as userName,
+			password as password,
+			name as name,
+			role_id as roleId,
+			status as status,
+			remark as remark,
+			skin as skin,
+			email as email,
+			number as number,
+	        phone
+		from 
+			tbl_sys_user
+		where 
+			email = #{email}
+		<if test="userName != null and userName != ''">
+			and user_name != #{userName}
+		</if>
+	</select>
+	
+	<!-- 通过编号获取数据 -->
+	<select id="findByUN" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			user_id as userId,
+			user_name as userName,
+			password as password,
+			name as name,
+			role_id as roleId,
+			status as status,
+			remark as remark,
+			skin as skin,
+			email as email,
+			number as number,
+			phone as phone
+		from 
+			tbl_sys_user
+		where 
+			number = #{number}
+		<if test="userName != null and userName != ''">
+			and userName != #{userName}
+		</if>
+	</select>
+	
+	<!-- 通过USERNAME获取数据 -->
+	<select id="findByUId" parameterType="pd" resultType="pd" useCache="false">
+		select 
+			user_id as userId,
+			user_name as userName,
+			password as password,
+			name as name,
+			role_id as roleId,
+			status as status,
+			remark as remark,
+			skin as skin,
+			email as email,
+			number as number,
+			phone as phone
+		from 
+			tbl_sys_user
+		where 
+			user_name = #{userName}
+	</select>
+	
+	<!-- 新增用户 -->
+	<insert id="saveU" parameterType="pd" flushCache="false">
+		insert into tbl_sys_user (
+			user_name,
+			password,
+			name,
+			role_id,
+			status,
+			remark,
+			skin,
+			email,
+			number,
+			phone
+		) values (
+			#{userName},
+			#{password},
+			#{name},
+			#{roleId},
+			#{status},
+			#{remark},
+			#{skin},
+			#{email},
+			#{number},
+			#{phone}
+		)
+	</insert>
+	<!-- 用户列表(用户组) -->
+	<select id="userlistPage" parameterType="page" resultType="pd" useCache="false">
+		select  u.user_id as userId,
+				u.user_name as userName,
+				u.password as password,
+				u.name as name,
+				u.email as email,
+				u.number as number,
+				u.phone as phone,
+				r.ROLE_ID,
+				r.ROLE_NAME
+		from tbl_sys_user u, tbl_sys_role r
+		where u.role_id = r.role_id
+		<if test="pd.userName != null and pd.userName != ''"><!-- 关键词检索 -->
+			and
+				(
+					 u.user_name LIKE CONCAT(CONCAT('%', #{pd.userName}),'%')
+				)
+		</if>
+		<if test="pd.roleId != null and pd.roleId != ''"><!-- 角色检索 -->
+			and u.role_id=#{pd.roleId}
+		</if>
+	</select>
+	
+	<!-- 用户列表(全部) -->
+	<select id="listAllUser" parameterType="pd" resultType="pd" useCache="false">
+		select  u.user_id as userId,
+				u.user_name as userName,
+				u.password as password,
+				u.name as name,
+				u.email as email,
+				u.number as number,
+				u.phone as phone,
+				r.ROLE_ID,
+				r.ROLE_NAME
+		from tbl_sys_user u, tbl_sys_role r
+		where u.role_id = r.role_id
+		and u.user_name != 'admin'
+		<if test="userName != null and userName != ''"><!-- 关键词检索 -->
+			and
+				(
+					 u.user_name LIKE CONCAT(CONCAT('%', #{userName}),'%')
+					 or 
+					 u.email LIKE CONCAT(CONCAT('%', #{userName}),'%')
+					 or
+					 u.number LIKE CONCAT(CONCAT('%', #{userName}),'%')
+					 or
+					 u.name LIKE CONCAT(CONCAT('%', #{userName}),'%')
+					  or
+					 u.phone LIKE CONCAT(CONCAT('%', #{userName}),'%')
+				)
+		</if>
+		<if test="roleId != null and roleId != ''"><!-- 角色检索 -->
+			and u.role_id=#{roleId}
+		</if>
+	</select>
+	
+	<!-- 删除用户 -->
+	<delete id="deleteUser" parameterType="pd" flushCache="false">
+		delete from tbl_sys_user
+		where 
+			user_id = #{userId}
+	</delete>
+	
+	<!-- 批量删除用户 -->
+	<delete id="deleteAllU" parameterType="String" flushCache="false">
+		delete from tbl_sys_user
+		where 
+			user_id in
+  			 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+</mapper>

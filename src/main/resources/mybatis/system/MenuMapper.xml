@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MenuMapper">
+
+	<resultMap type="Menu" id="menuResultMap">
+		<id column="menu_id" property="menuId"/>
+		<result column="menu_name" property="menuName"/>
+		<result column="menu_url" property="menuUrl"/>
+		<result column="parent_id" property="parentId"/>
+		<result column="menu_order" property="menuOrder"/>
+		<result column="menu_icon" property="menuIcon"/>
+		<result column="menu_type" property="menuType"/>
+	</resultMap>
+	
+	<!-- ztree -->
+	<resultMap type="Menu" id="menuZtreeResultMap">
+	<id column="menu_id" property="menuId"/>
+	<result column="menu_name" property="menuName"/>
+	<result column="menu_url" property="menuUrl"/>
+	<result column="parent_id" property="parentId"/>
+	<result column="menu_order" property="menuOrder"/>
+	<result column="menu_icon" property="menuIcon"/>
+	<result column="menu_type" property="menuType"/>
+	<result column="target" property="target"></result>
+</resultMap>
+
+
+
+	<select id="findMaxId" parameterType="pd" resultType="pd">
+		select MAX(menu_id) as menuId MID FROM tbl_sys_menu
+	</select>
+	
+	<select id="listAllParentMenu" resultMap="menuResultMap">
+		select * from tbl_sys_menu
+		where parent_id = 0 order by menu_order asc
+	</select>
+
+
+	<select id="listAllUserParentMenu" resultMap="menuResultMap" parameterType="Integer">
+		select
+		        a.menu_id as menuId,
+		 		a.menu_name as menuName,
+		 		a.menu_url as menuUrl,
+		 		a.parent_id as parentId,
+		 		a.menu_order as menuOrder,
+		 		a.menu_icon as menuIcon,
+		 		a.menu_type as menuType
+		from tbl_sys_menu a ,tbl_role_menu b  where a.menu_id = b.menu_id
+		and a.parent_id = 0 and  b.role_id = #{roleId}
+		 order by a.menu_order asc
+	</select>
+
+
+	<select id="listSubMenuByParentId" parameterType="java.lang.Integer" resultMap="menuResultMap">
+		select  * from tbl_sys_menu
+		where parent_id = #{parentId} order by menu_order asc
+	</select>
+
+
+
+	<select id="listSubUserMenuByParentId" parameterType="java.util.HashMap" resultMap="menuResultMap">
+		select
+		        a.menu_id as menuId,
+		 		a.menu_name as menuName,
+		 		a.menu_url as menuUrl,
+		 		a.parent_id as parentId,
+		 		a.menu_order as menuOrder,
+		        a.menu_icon as menuIcon,
+		 		a.menu_type as menuType
+		 from tbl_sys_menu a,tbl_role_menu b where a.menu_id = b.menu_id
+		 and b.role_id = #{roleId}
+		<if test="menuIds != null and menuIds.size() != 0">
+			and b.menu_id IN
+			<foreach collection="menuIds" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		order by a.menu_order asc
+	</select>
+
+
+	<select id="getMenuIds"  parameterType="Integer" resultType="java.lang.Integer">
+		select menu_id from tbl_sys_menu where parent_id = #{parentId}
+	</select>
+
+
+	<select id="getMenuById" parameterType="pd" resultType="pd">
+		select  menu_id as menuId,
+		 		menu_name as menuName,
+		 		menu_url as menuUrl,
+		 		parent_id as parentId,
+		 		menu_order as menuOrder,
+		 		menu_icon as menuIcon,
+		 		menu_type as menuType
+		 from  tbl_sys_menu
+		 where menu_id=#{menuId}
+	</select>
+	
+	
+	<insert id="insertMenu" parameterType="Menu">
+		insert into tbl_sys_menu (
+			menu_name,
+			menu_url,
+			parent_id,
+			menu_order,
+			menu_type
+		) values (
+			#{menuName},
+			#{menuUrl},
+			#{parentId},
+			#{menuOrder},
+			#{menuType}
+		)
+	</insert>
+
+
+	<update id="updateMenu" parameterType="pd">
+		update tbl_sys_menu set
+			menu_name =#{menuName},
+			menu_url  =#{menuUrl},
+			parent_id =#{parentId},
+			menu_order=#{menuOrder}
+		where 
+			menu_id=#{menuId}
+	</update>
+	
+	<update id="editicon" parameterType="pd">
+		update tbl_sys_menu set
+			menu_icon=#{menuIcon}
+		where menu_id=#{menuId}
+	</update>
+
+
+	
+	<delete id="deleteMenuById" parameterType="String">
+		delete from tbl_sys_menu
+		where menu_id=#{MENU_ID}
+		or parent_id=#{MENU_ID}
+	</delete>
+</mapper>

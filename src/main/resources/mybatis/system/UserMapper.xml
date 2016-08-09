@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserMapper">
+
+	<resultMap type="User" id="userAndRoleResultMap">
+		<id column="user_id" property="userId"/>
+		<result column="user_name" property="userName"/>
+		<result column="password" property="password"/>
+		<result column="name" property="name"/>
+		<result column="status" property="status"/>
+		<result column="skin" property="skin"/>
+		<association property="role" column="ROLE_ID" javaType="Role">
+			<id column="role_id" property="roleId"/>
+			<result column="role_name" property="roleName"/>
+		</association>
+	</resultMap>
+	<resultMap type="User" id="userResultMap">
+		<id column="user_id" property="userId"/>
+		<result column="user_name" property="userName"/>
+		<result column="password" property="password"/>
+		<result column="name" property="name"/>
+		<result column="status" property="status"/>
+		<result column="role_id" property="roleId"/>
+		<result column="skin" property="skin"/>
+	</resultMap>
+	
+	<!-- 判断用户名和密码 -->
+	<select id="getUserInfo" parameterType="User" resultMap="userResultMap">
+		select * from tbl_sys_user
+		where 1=1
+		<if test="userName != null and password != null">
+		and user_name = #{userName} and password=#{password}
+		</if>
+		<if test="userId !=null and userId >0 ">
+		and user_id = #{userId}
+		</if>
+	</select>
+	
+	<select id="getUserAndRoleById" parameterType="String" resultMap="userAndRoleResultMap">
+		select  u.user_id,
+				u.user_name,
+				u.name,
+				u.password,
+				u.skin,
+				r.role_id,
+				r.role_name
+		from tbl_sys_user u
+		left join tbl_sys_role r
+		on u.role_id=r.role_id
+		where u.status=1
+		and u.user_id=#{userId}
+	</select>
+
+</mapper>
